@@ -35,7 +35,7 @@ var request = require('request');
 request('http://coincap.io/front', function(err, res, body) {
   var coins = JSON.parse(body);
 
-  c.forEach(function(coin) {
+  coins.forEach(function(coin) {
     for (var i = 0; i < 10; i++) {
       var coin = coins[i];
       console.log("\n=-------------------=");
