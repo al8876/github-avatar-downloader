@@ -1,6 +1,8 @@
 var request = require('request');
 var fs = require('fs');
 var token = require('./secrets');
+var repoOwner = process.argv[2];
+var repoName = process.argv[3];
 
 function getRepoContributors(repoOwner, repoName, cb) {
   if (repoOwner === undefined | repoName === undefined) {
@@ -14,21 +16,12 @@ function getRepoContributors(repoOwner, repoName, cb) {
     }
   }};
 
-
   request(options, function(err, res, body) {
     var parse = JSON.parse(body);
+    console.log("Avatar URL: ", body.avatar_url);
     cb(err, parse);
-    parse.forEach(function(avatar) {
-        console.log("Avatar URL: ", avatar.avatar_url);
-    });
   });
 }
-
-
-getRepoContributors("jquery", "jquery", function(err, result) {
-  console.log("Errors:", err);
-  console.log("Result:", result);
-});
 
 function downloadImageByURL(url, filePath) {
   request.get(url)
@@ -36,6 +29,7 @@ function downloadImageByURL(url, filePath) {
       throw err;
     })
     .on('response', function(response) {
+      console.log('Downloading');
       console.log('Response Status Code: ', response.statusCode);
       console.log('Response Status Message: ', response.statusMessage);
       console.log('Response Headers: ', response.headers['content-type']);
@@ -46,11 +40,11 @@ function downloadImageByURL(url, filePath) {
     .pipe(fs.createWriteStream(filePath));
 }
 
-
-// getRepoContributors(process.argv[2], process.argv[3], function(err, result){
-//  console.log("Errors:", err);
-//  var sort = JSON.parse(result);
-//  sort.forEach(function(avatar){
-//    downloadImageByURL(avatar.avatar_url, "avatars/pic");
-//  });
-// });
+getRepoContributors(repoOwner, repoName, function(err, result){
+  console.log("Errors: ", err);
+  console.log("Result:", result);
+  for (var i = 0; i < result.length; i++) {
+    var contributor = result[i]
+    downloadImageByURL(contributor.avatar_url, "avatars/" + contributor.login + ".jpg");
+  }
+})
